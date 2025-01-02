@@ -195,7 +195,9 @@ class LoginScreenState extends State<LoginScreen>
                   ),
                   const SizedBox(height: 60),
                   _isLoading
-                      ? CircularProgressIndicator()
+                      ? CircularProgressIndicator(
+                          color: Color(0xFF79a341),
+                        )
                       : ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFF79a341),

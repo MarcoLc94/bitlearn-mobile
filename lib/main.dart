@@ -1,6 +1,6 @@
+import 'package:bitlearn_mobile/screens/layout_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         primarySwatch: Colors.green,
@@ -20,8 +21,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginScreen(), // Ruta de la pantalla de Login
-        '/home': (context) =>
-            const HomeScreen(), // Ruta de la pantalla de inicio
+        '/home': (context) => const Layout(), // Ruta de la pantalla de inicio
       },
     );
   }
