@@ -1,37 +1,48 @@
+import 'package:bitlearn_mobile/screens/courses_screen.dart';
+import 'package:bitlearn_mobile/screens/home_screen.dart';
+import 'package:bitlearn_mobile/screens/my_courses_screen.dart';
 import 'package:flutter/material.dart';
-import '../widgets/navbar.dart'; // Asumimos que tienes tu Navbar como widget independiente
-import 'home_screen.dart'; // Ejemplo de una pantalla dentro del Layout
+import '../widgets/navbar.dart';
+import '../widgets/sidebar.dart';
 
-class Layout extends StatelessWidget {
+class Layout extends StatefulWidget {
   const Layout({super.key});
+
+  @override
+  State<Layout> createState() => _LayoutState();
+}
+
+class _LayoutState extends State<Layout> {
+  int _selectedPageIndex = 0;
+
+  // Mapa de índices a widgets
+  final List<Widget> _pages = const [
+    HomeScreen(),
+    CoursesScreen(),
+    MyCoursesScreen(),
+  ];
+
+  // Cambiar de página
+  void _selectPage(int index) {
+    setState(() {
+      _selectedPageIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const Navbar(), // Aquí usas tu Navbar
-      body: const _BodyNavigator(),
-    );
-  }
-}
-
-class _BodyNavigator extends StatelessWidget {
-  const _BodyNavigator();
-
-  @override
-  Widget build(BuildContext context) {
-    // El body se controla por la ruta actual
-    return Navigator(
-      onGenerateRoute: (settings) {
-        // Define las rutas y qué pantallas deben ser cargadas
-        switch (settings.name) {
-          case '/':
-            return MaterialPageRoute(builder: (context) => const HomeScreen());
-          case '/home':
-            return MaterialPageRoute(builder: (context) => const HomeScreen());
-          default:
-            return MaterialPageRoute(builder: (context) => const HomeScreen());
-        }
-      },
+      appBar: const Navbar(),
+      drawer: SidebarMenu(
+        onItemSelected: (index) {
+          Navigator.pop(context); // Cierra el Drawer
+          _selectPage(index); // Cambia de página
+        },
+      ),
+      body: IndexedStack(
+        index: _selectedPageIndex,
+        children: _pages,
+      ),
     );
   }
 }

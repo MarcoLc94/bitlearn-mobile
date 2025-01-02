@@ -8,27 +8,27 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      leading: IconButton(
-        icon: Icon(
-          Icons.menu,
-          size: 40,
+        leading: IconButton(
+          icon: Icon(
+            Icons.menu,
+            size: 40,
+          ),
+          onPressed: () => (Scaffold.of(context).openDrawer()),
         ),
-        onPressed: () => (Scaffold.of(context).openDrawer()),
-      ),
-      actions: [
-        Padding(
-            padding: EdgeInsets.only(right: 10.0),
-            child: IconButton(
-              icon: Icon(
-                Icons.account_circle,
-                size: 40,
-              ),
-              onPressed: () => (_showUserInfoModal(context)),
-            ))
-      ],
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20.0))),
-    );
+        actions: [
+          Padding(
+              padding: EdgeInsets.only(right: 10.0),
+              child: IconButton(
+                icon: Icon(
+                  Icons.account_circle,
+                  size: 40,
+                ),
+                onPressed: () => (_showUserInfoModal(context)),
+              ))
+        ],
+        shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.vertical(bottom: Radius.circular(20.0))));
   }
 
   @override
@@ -45,19 +45,20 @@ void _showUserInfoModal(BuildContext context) {
         children: [
           Positioned(
               top: 20,
-              right: 0,
+              left: 1,
               child: Material(
                   color: Colors.transparent,
                   child: Dialog(
                     child: Container(
                       height: 250,
-                      width: 300,
+                      width: 350,
                       padding: EdgeInsets.all(16.0),
                       child: Column(children: [
                         SizedBox(height: 20),
                         Title(
                           color: Colors.black,
-                          child: Text("Perfil de estudiante"),
+                          child: Text("Perfil de estudiante",
+                              style: TextStyle(fontWeight: FontWeight.w700)),
                         ),
                         SizedBox(height: 20),
                         Row(mainAxisSize: MainAxisSize.min, children: [
@@ -70,12 +71,18 @@ void _showUserInfoModal(BuildContext context) {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.max,
                             children: [
-                              Text(
-                                'Santiago Doria',
-                                textAlign: TextAlign.left,
-                              ),
-                              Text('johndoe@example.com',
-                                  textAlign: TextAlign.left),
+                              Row(children: [
+                                Icon(Icons.person),
+                                SizedBox(width: 10),
+                                Text('Santiago Doria')
+                              ]),
+                              Row(children: [
+                                Icon(Icons.email),
+                                SizedBox(width: 10),
+                                Text(
+                                  'johndoe@example.com',
+                                ),
+                              ]),
                             ],
                           ),
                         ]),
@@ -91,8 +98,12 @@ void _showUserInfoModal(BuildContext context) {
                           onPressed: () {
                             // Acción de logout
                             Navigator.pop(context); // Cerrar el modal
+                            Navigator.pushNamed(context, '/');
                           },
-                          child: Text('Cerrar sesión'),
+                          child: Text(
+                            'Cerrar sesión',
+                            style: TextStyle(color: Color(0xFF79a341)),
+                          ),
                         ),
                       ]),
                     ),
