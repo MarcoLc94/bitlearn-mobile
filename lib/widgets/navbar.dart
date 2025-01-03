@@ -132,7 +132,7 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget {
                               removeToken();
                               Navigator.pop(context); // Cerrar el modal
                               Navigator.pushReplacementNamed(context,
-                                  '/login'); // Reemplazar la pantalla actual con la de login
+                                  '/'); // Reemplazar la pantalla actual con la de login
                             },
                             child: Text(
                               'Cerrar sesión',

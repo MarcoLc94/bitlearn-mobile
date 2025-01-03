@@ -24,7 +24,35 @@ class CourseService {
 
       // Configuramos los headers, incluyendo el token
       final response = await http.get(
-        Uri.parse('$apiUrl/course/search?q=pipe'),
+        Uri.parse('$apiUrl/course/search'),
+        headers: {
+          'Authorization': 'Bearer $token', // Enviar el token en el header
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = json.decode(response.body);
+        return data.map((courseData) => Course.fromJson(courseData)).toList();
+      } else {
+        throw Exception('Failed to load courses: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching courses: $e');
+    }
+  }
+
+  // Método para obtener los cursos
+  Future<List<Course>> fetchMyCourses() async {
+    try {
+      String? token = await authService.getToken(); // Obtener el token
+
+      if (token == null) {
+        throw Exception('No auth token found. Please log in.');
+      }
+
+      // Configuramos los headers, incluyendo el token
+      final response = await http.get(
+        Uri.parse('$apiUrl/myAssignments'),
         headers: {
           'Authorization': 'Bearer $token', // Enviar el token en el header
         },

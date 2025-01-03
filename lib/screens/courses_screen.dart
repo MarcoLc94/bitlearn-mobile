@@ -103,40 +103,118 @@ class CoursesScreenState extends State<CoursesScreen> {
                               itemCount: courses.length,
                               itemBuilder: (context, index) {
                                 final course = courses[index];
-                                return Card(
-                                  margin: const EdgeInsets.symmetric(
-                                    vertical: 10.0,
-                                  ),
-                                  child: ListTile(
-                                    leading: course.imageUrl.isNotEmpty
-                                        ? Image.network(
-                                            course.imageUrl,
-                                            width: 50,
-                                            height: 50,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    const Icon(
-                                              Icons.broken_image,
-                                              size: 50,
-                                              color: Colors.grey,
+                                return MouseRegion(
+                                  onEnter: (_) {
+                                    setState(() {
+                                      // Muestra el botón "Suscribirse" al hacer hover
+                                    });
+                                  },
+                                  onExit: (_) {
+                                    setState(() {
+                                      // Esconde el botón "Suscribirse" cuando el mouse sale
+                                    });
+                                  },
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      // Acción al hacer clic (por ejemplo, navegar al detalle del curso)
+                                    },
+                                    child: Card(
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 10.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .stretch, // Esto asegura que el contenido ocupe todo el ancho del Card
+                                        children: [
+                                          ListTile(
+                                            leading: course.img != null &&
+                                                    course.img!.isNotEmpty
+                                                ? Image.network(
+                                                    course.img!,
+                                                    width: 50,
+                                                    height: 50,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context,
+                                                            error,
+                                                            stackTrace) =>
+                                                        const Icon(
+                                                      Icons.broken_image,
+                                                      size: 50,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  )
+                                                : const Icon(
+                                                    Icons.image,
+                                                    size: 50,
+                                                    color: Colors.grey,
+                                                  ),
+                                            title: Text(
+                                              course.name,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
                                             ),
-                                          )
-                                        : const Icon(
-                                            Icons.image,
-                                            size: 50,
-                                            color: Colors.grey,
+                                            subtitle: Text(
+                                              course.description.length > 50
+                                                  ? course.description
+                                                          .substring(0, 50) +
+                                                      '...' // Mostrar las primeras 50 letras
+                                                  : course
+                                                      .description, // Si la descripción tiene menos de 50 caracteres, mostrarla completa
+                                            ),
                                           ),
-                                    title: Text(
-                                      course.name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                          const SizedBox(
+                                              height:
+                                                  10), // Espaciado entre la lista y el botón
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Align(
+                                              alignment: Alignment
+                                                  .center, // Centra el botón
+                                              child: SizedBox(
+                                                width:
+                                                    150, // Ajusta el ancho deseado
+                                                height:
+                                                    80, // Ajusta la altura del botón
+                                                child: Column(
+                                                  children: [
+                                                    Text('Ver detalles'),
+                                                    ElevatedButton(
+                                                      onPressed: () {
+                                                        // Acción cuando el botón es presionado
+                                                        // Aquí puedes manejar la suscripción, por ejemplo
+                                                      },
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        padding: EdgeInsets
+                                                            .zero, // Elimina el padding interno
+                                                        backgroundColor:
+                                                            const Color(
+                                                                0xFF79a341), // Color del botón
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius
+                                                              .zero, // Sin bordes redondeados
+                                                        ),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          'Suscribirse',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize:
+                                                                16, // Tamaño del texto
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(height: 30),
+                                        ],
                                       ),
                                     ),
-                                    subtitle: Text(course.description),
-                                    onTap: () {
-                                      // Acción al seleccionar un curso
-                                    },
                                   ),
                                 );
                               },
