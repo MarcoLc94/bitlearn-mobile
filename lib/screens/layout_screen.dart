@@ -32,7 +32,7 @@ class _LayoutState extends State<Layout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const Navbar(),
+      appBar: Navbar(),
       drawer: SidebarMenu(
         onItemSelected: (index) {
           Navigator.pop(context); // Cierra el Drawer

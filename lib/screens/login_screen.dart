@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import '../services/auth/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,13 +23,24 @@ class LoginScreenState extends State<LoginScreen>
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
 
+  // Para saber si el campo ha sido tocado
+  bool _userTouched = false;
+  bool _passwordTouched = false;
+
+  // Método para guardar el token
+  Future<void> saveToken(String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Guardamos el token en SharedPreferences
+    await prefs.setString('auth_token', token);
+  }
+
   @override
   void initState() {
     super.initState();
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     );
 
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -51,44 +64,73 @@ class LoginScreenState extends State<LoginScreen>
     });
   }
 
+  bool _isFormValid() {
+    // Verifica que los campos no estén vacíos y que tengan más de 3 caracteres
+    return _userController.text.isNotEmpty &&
+        _userController.text.length > 3 &&
+        _passwordController.text.isNotEmpty &&
+        _passwordController.text.length > 3;
+  }
+
   void submit() async {
+    String user = _userController.text;
+    String password = _passwordController.text;
     setState(() {
       _isLoading = true;
     });
 
-    await Future.delayed(Duration(seconds: 2));
+    AuthService authService =
+        AuthService(baseUrl: 'https://learn.bitfarm.mx/api');
+    String? token = await authService.login(user, password);
 
-    Fluttertoast.showToast(
-      msg: "Inicio de sesión correcto!",
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.TOP,
-      timeInSecForIosWeb: 1,
-      backgroundColor: Color(0xFF79a341),
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
+    // Si el token es null, significa que el login falló
+    if (token.isNotEmpty && token != "Error") {
+      // Mostramos un mensaje de éxito y navegamos a la siguiente pantalla
+      Fluttertoast.showToast(
+        msg: "Inicio de sesión correcto!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Color(0xFF79a341),
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
 
-    setState(() {
-      _isLoading = false;
-    });
+      setState(() {
+        _isLoading = false;
+      });
 
-    if (mounted) {
-      Navigator.pushNamed(context, '/home');
+      if (mounted) {
+        Navigator.pushNamed(context, '/home');
+      }
+    } else {
+      // Si el login falló, mostramos un mensaje de error
+      Fluttertoast.showToast(
+        msg: "Credenciales incorrectas",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 40),
-            // Usamos Stack para superponer las imágenes
+            const SizedBox(height: 140),
             Stack(
               alignment: Alignment.center,
               children: [
@@ -132,7 +174,10 @@ class LoginScreenState extends State<LoginScreen>
                   TextFormField(
                     controller: _userController,
                     focusNode: _userFocusNode,
-                    decoration: const InputDecoration(
+                    onChanged: (_) => setState(() {
+                      _userTouched = true;
+                    }),
+                    decoration: InputDecoration(
                       labelStyle: TextStyle(color: Colors.black),
                       labelText: 'Usuario',
                       border: OutlineInputBorder(),
@@ -142,56 +187,61 @@ class LoginScreenState extends State<LoginScreen>
                           width: 2.0,
                         ),
                       ),
+                      errorText: _userTouched &&
+                              (_userController.text.isEmpty ||
+                                  _userController.text.length <= 3)
+                          ? 'Debe tener más de 3 caracteres'
+                          : null,
                     ),
-                    style: TextStyle(
-                        color: Colors.black), // Cambia el color del texto
-                    cursorColor:
-                        Color(0xFF79a341), // Cambia el color del cursor
+                    style: TextStyle(color: Colors.black),
+                    cursorColor: Color(0xFF79a341),
                   ),
                   const SizedBox(height: 20),
-                  Column(
-                    children: [
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _hidePassword,
-                        focusNode: _passwordFocusNode,
-                        decoration: InputDecoration(
-                          labelStyle: TextStyle(color: Colors.black),
-                          labelText: 'Contraseña',
-                          border: const OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Color(0xFF79a341),
-                              width: 2.0,
-                            ),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _hidePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                            onPressed: togglePasswordVisibility,
-                          ),
-                        ),
-                        style: TextStyle(
-                            color: Colors.black), // Cambia el color del texto
-                        cursorColor:
-                            Color(0xFF79a341), // Cambia el color del cursorn
-                      ),
-                      const SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Olvidaste la contraseña?",
-                          textAlign: TextAlign.left,
-                          style: const TextStyle(
-                            color: Color(0xFF79a341),
-                            fontWeight: FontWeight.w700,
-                          ),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _hidePassword,
+                    focusNode: _passwordFocusNode,
+                    onChanged: (_) => setState(() {
+                      _passwordTouched = true;
+                    }),
+                    decoration: InputDecoration(
+                      labelStyle: TextStyle(color: Colors.black),
+                      labelText: 'Contraseña',
+                      border: const OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xFF79a341),
+                          width: 2.0,
                         ),
                       ),
-                    ],
+                      errorText: _passwordTouched &&
+                              (_passwordController.text.isEmpty ||
+                                  _passwordController.text.length <= 3)
+                          ? 'Debe tener más de 3 caracteres'
+                          : null,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _hidePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: togglePasswordVisibility,
+                      ),
+                    ),
+                    style: TextStyle(color: Colors.black),
+                    cursorColor: Color(0xFF79a341),
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Olvidaste la contraseña?",
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(
+                        color: Color(0xFF79a341),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 60),
                   _isLoading
@@ -200,13 +250,15 @@ class LoginScreenState extends State<LoginScreen>
                         )
                       : ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF79a341),
+                            backgroundColor: _isFormValid()
+                                ? Color(0xFF79a341)
+                                : Colors.grey,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.zero,
                             ),
                           ),
-                          onPressed: submit,
+                          onPressed: _isFormValid() ? submit : null,
                           child: const Text('Iniciar sesión'),
                         ),
                 ],
