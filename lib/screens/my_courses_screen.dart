@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/course_model.dart';
 import '../services/courses/courses_service.dart';
 import '../services/auth/auth_service.dart';
+import './course_screen.dart';
 
 class MyCoursesScreen extends StatefulWidget {
   const MyCoursesScreen({super.key, authService});
@@ -108,16 +109,6 @@ class MyCoursesScreenState extends State<MyCoursesScreen> {
                                       0.0; // Puedes actualizar este valor según el progreso real del curso.
 
                                   return MouseRegion(
-                                    onEnter: (_) {
-                                      setState(() {
-                                        // Muestra el botón "Suscribirse" al hacer hover
-                                      });
-                                    },
-                                    onExit: (_) {
-                                      setState(() {
-                                        // Esconde el botón "Suscribirse" cuando el mouse sale
-                                      });
-                                    },
                                     child: GestureDetector(
                                       onTap: () {
                                         // Acción al hacer clic (por ejemplo, navegar al detalle del curso)
@@ -203,7 +194,29 @@ class MyCoursesScreenState extends State<MyCoursesScreen> {
                                                   ElevatedButton(
                                                     onPressed: () {
                                                       // Acción cuando el botón "Play" es presionado
-                                                      // Aquí puedes manejar la acción de reproducir el curso
+                                                      String mainCourseId = course
+                                                          ._id; // Aquí accedemos al _id de la clase Course
+
+                                                      // Crear un mapa con el ID del curso principal
+                                                      Map<String, dynamic>
+                                                          arguments = {
+                                                        'mainCourseId':
+                                                            mainCourseId, // Pasamos el _id principal
+                                                        'course':
+                                                            course, // También puedes pasar todo el objeto 'course' si lo necesitas
+                                                      };
+
+                                                      // Navegar al CourseScreen sin perder la estructura del Layout
+                                                      Navigator.of(context)
+                                                          .push(
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              CourseScreen(
+                                                            courseData:
+                                                                arguments, // Enviar todo el mapa como argumento
+                                                          ),
+                                                        ),
+                                                      );
                                                     },
                                                     style: ElevatedButton
                                                         .styleFrom(
@@ -218,7 +231,7 @@ class MyCoursesScreenState extends State<MyCoursesScreen> {
                                                       color: Colors.white,
                                                       size: 30,
                                                     ),
-                                                  ),
+                                                  )
                                                 ],
                                               ),
                                             ),

@@ -1,3 +1,4 @@
+import 'package:bitlearn_mobile/screens/course_screen.dart';
 import 'package:bitlearn_mobile/screens/courses_screen.dart';
 import 'package:bitlearn_mobile/screens/home_screen.dart';
 import 'package:bitlearn_mobile/screens/my_courses_screen.dart';
@@ -9,14 +10,15 @@ class Layout extends StatefulWidget {
   const Layout({super.key});
 
   @override
-  State<Layout> createState() => _LayoutState();
+  State<Layout> createState() => LayoutState();
 }
 
-class _LayoutState extends State<Layout> {
-  int _selectedPageIndex = 0;
+class LayoutState extends State<Layout> {
+  int selectedPageIndex = 0;
 
   // Mapa de índices a widgets
   final List<Widget> _pages = const [
+    // Asegúrate de que estas páginas existan correctamente
     HomeScreen(),
     CoursesScreen(),
     MyCoursesScreen(),
@@ -25,7 +27,7 @@ class _LayoutState extends State<Layout> {
   // Cambiar de página
   void _selectPage(int index) {
     setState(() {
-      _selectedPageIndex = index;
+      selectedPageIndex = index;
     });
   }
 
@@ -39,9 +41,24 @@ class _LayoutState extends State<Layout> {
           _selectPage(index); // Cambia de página
         },
       ),
-      body: IndexedStack(
-        index: _selectedPageIndex,
-        children: _pages,
+      body: Navigator(
+        onGenerateRoute: (settings) {
+          if (settings.name == '/course') {
+            final args = settings.arguments
+                as Map<String, dynamic>; // Ahora esperamos un Map
+
+            return MaterialPageRoute(
+              builder: (context) => CourseScreen(
+                courseData: args, // Pasamos el mapa completo
+              ),
+            );
+          }
+
+          // Si no, mostramos la página principal
+          return MaterialPageRoute(
+            builder: (context) => _pages[selectedPageIndex],
+          );
+        },
       ),
     );
   }

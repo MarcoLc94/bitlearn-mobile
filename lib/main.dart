@@ -4,6 +4,7 @@ import 'package:bitlearn_mobile/screens/my_courses_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
+import './screens/course_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         '/courses': (context) => CoursesScreen(), //Te lleva a coursitos C:
         '/my-courses': (context) =>
             MyCoursesScreen(), //Te lleva a tus cursillos
+        '/course': (context) => CourseScreen(courseData: {}),
       },
     );
   }

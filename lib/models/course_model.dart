@@ -12,15 +12,29 @@ class Course {
     this.img, // Si img es nulo, no causará problemas.
   });
 
-  // El método fromJson ahora maneja los valores nulos
+  @override
+  String toString() {
+    return 'Curso: $name, Descripción: $description';
+  }
+
   factory Course.fromJson(Map<String, dynamic> json) {
-    return Course(
-      id: json['_id'] ?? '', // Si '_id' es nulo, usa un string vacío
-      name: json['name'] ??
-          'Nombre no disponible', // Si 'name' es nulo, usa un valor por defecto
-      description: json['description'] ??
-          'Descripción no disponible', // Lo mismo para 'description'
-      img: json['img'], // No es necesario hacer nada si 'img' es nulo
-    );
+    // Verificamos si el JSON tiene el campo 'course' (caso anidado)
+    if (json.containsKey('course')) {
+      final courseData = json['course']; // Accede al objeto 'course' si existe
+      return Course(
+        id: courseData['_id'] ?? '',
+        name: courseData['name'] ?? 'Nombre no disponible',
+        description: courseData['description'] ?? 'Descripción no disponible',
+        img: courseData['img'], // img puede ser nulo
+      );
+    } else {
+      // Si no contiene 'course', tomamos los datos directamente del objeto principal
+      return Course(
+        id: json['_id'] ?? '',
+        name: json['name'] ?? 'Nombre no disponible',
+        description: json['description'] ?? 'Descripción no disponible',
+        img: json['img'], // img puede ser nulo
+      );
+    }
   }
 }

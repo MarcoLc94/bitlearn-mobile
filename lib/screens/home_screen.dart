@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/course_model.dart';
 import '../services/courses/courses_service.dart';
 import '../services/auth/auth_service.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -164,8 +163,7 @@ class HomeScreenState extends State<HomeScreen> {
                                 // Fondo con opacidad para mejorar la legibilidad
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.black
-                                        .withOpacity(0.4), // Usando withOpacity
+                                    color: Color(0x1A000000),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
@@ -246,7 +244,6 @@ class HomeScreenState extends State<HomeScreen> {
           GestureDetector(
             onTap: () {
               // Acción al hacer clic en la noticia
-              print('Noticia 1 clickeada');
             },
             child: Container(
               margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -256,7 +253,7 @@ class HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Color(0x1A000000),
                     blurRadius: 5,
                     offset: Offset(0, 3),
                   ),
@@ -285,7 +282,6 @@ class HomeScreenState extends State<HomeScreen> {
           GestureDetector(
             onTap: () {
               // Acción al hacer clic en la noticia
-              print('Noticia 2 clickeada');
             },
             child: Container(
               margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -295,7 +291,7 @@ class HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Color(0x1A000000),
                     blurRadius: 5,
                     offset: Offset(0, 3),
                   ),
@@ -324,7 +320,6 @@ class HomeScreenState extends State<HomeScreen> {
           GestureDetector(
             onTap: () {
               // Acción al hacer clic en la noticia
-              print('Noticia 3 clickeada');
             },
             child: Container(
               margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -334,7 +329,7 @@ class HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Color(0x1A000000),
                     blurRadius: 5,
                     offset: Offset(0, 3),
                   ),
@@ -364,77 +359,8 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Vista de Estadísticas
   Widget _buildEstadisticasView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Título "Estadísticas"
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Análisis de Desempeño del Curso',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          // Gráfico de líneas para analizar el desempeño
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-            child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                    show: true,
-                    getDrawingHorizontalLine: (value) {
-                      return FlLine(
-                        color: const Color(0xff37434d),
-                        strokeWidth: 1,
-                      );
-                    }),
-                titlesData: FlTitlesData(
-                  leftTitles: SideTitles(showTitles: true, margin: 8),
-                  bottomTitles: SideTitles(showTitles: true, margin: 8),
-                ),
-                borderData: FlBorderData(
-                  show: true,
-                  border: Border.all(color: const Color(0xff37434d), width: 1),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: [
-                      FlSpot(0, 0), // Semana 1
-                      FlSpot(1, 0.2), // Semana 2
-                      FlSpot(2, 0.4), // Semana 3
-                      FlSpot(3, 0.6), // Semana 4
-                      FlSpot(4, 0.8), // Semana 5
-                      FlSpot(5, 1), // Semana 6 (completado)
-                    ],
-                    isCurved: true,
-                    colors: [Colors.blue],
-                    barWidth: 4,
-                    isStrokeCapRound: true,
-                    belowBarData: BarAreaData(
-                        show: true, colors: [Colors.blue.withOpacity(0.3)]),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Texto adicional debajo del gráfico
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            child: Text(
-              'Análisis del desempeño en las últimas 6 semanas del curso. Cada punto en la línea representa el progreso semanal.',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-          ),
-        ],
-      ),
-    );
+    return Center(child: Text('Vista de Estadísticas'));
   }
 }
