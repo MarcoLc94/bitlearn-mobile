@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../services/auth/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -72,7 +73,28 @@ class LoginScreenState extends State<LoginScreen>
         _passwordController.text.length > 3;
   }
 
+  Future<bool> _checkConnectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      Fluttertoast.showToast(
+        msg: "No hay conexión a Internet",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      return false;
+    }
+    return true;
+  }
+
   void submit() async {
+    // Verifica la conectividad antes de proceder
+    bool isConnected = await _checkConnectivity();
+    if (!isConnected) return;
+
     String user = _userController.text;
     String password = _passwordController.text;
     setState(() {

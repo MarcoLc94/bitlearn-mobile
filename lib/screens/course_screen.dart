@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
-import '../models/course_model.dart';
 import '../services/courses/courses_service.dart';
 import '../services/auth/auth_service.dart';
 
@@ -18,28 +17,63 @@ class _CourseScreenState extends State<CourseScreen> {
   late VideoPlayerController _videoController;
   ChewieController? _chewieController;
 
-  // Crear una instancia del servicio
   final CourseService coursesService = CourseService(
       authService: AuthService(baseUrl: 'https://learn.bitfarm.mx/api'));
 
-  // Variable para almacenar los cursos
   List data = [];
+  List assigmentInfo = [];
+  String idAssigment = "";
   bool isLoading = true;
   String? errorMessage;
+  Map<dynamic, dynamic>? assignmentContent;
+  List lessons = [];
 
-  // Método para obtener los cursos
-  Future<void> fetchCourseById(String courseId) async {
+  Future<dynamic> fetchMyAssigment() async {
     try {
-      List<dynamic> dataInfo = await coursesService.fetchMyCourseById(courseId);
+      List<dynamic> assigment = await coursesService.fetchMyAssigment();
       setState(() {
-        data = dataInfo;
-        print(data);
+        assigmentInfo = assigment;
+        final idInside = widget.courseData['courseId'];
+        final currentAssigment = assigmentInfo.firstWhere(
+          (item) => item['course']['_id'] == idInside,
+          orElse: () => null,
+        );
+        idAssigment = currentAssigment['_id'];
         isLoading = false;
+        fetchCourseById(idAssigment);
       });
     } catch (e) {
       setState(() {
         isLoading = false;
-        errorMessage = 'No se pudieron cargar los cursos: $e';
+        errorMessage = 'Error al traer el assigment';
+      });
+    }
+  }
+
+  Future<void> fetchCourseById(String courseId) async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      List<dynamic> dataInfo = await coursesService.fetchMyCourseById(courseId);
+      if (dataInfo.isEmpty) {
+        throw Exception('No se encontraron datos para el curso.');
+      }
+
+      setState(() {
+        data = dataInfo;
+        assignmentContent = data[0]['sections'][0];
+        lessons = data[0]['sections'][0]['lessons'];
+        isLoading = false;
+      });
+
+      setupVideoPlayer(); // Llama a la función de inicialización después de cargar los datos
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Error al cargar los cursos: $e';
       });
     }
   }
@@ -47,55 +81,37 @@ class _CourseScreenState extends State<CourseScreen> {
   @override
   void initState() {
     super.initState();
-    fetchCourseById(widget.courseData['courseId']);
-    print("Variable es: ${widget.courseData['course']}");
+    fetchMyAssigment();
+  }
 
-    print(data);
+  Future<void> setupVideoPlayer() async {
+    if (data.isNotEmpty) {
+      try {
+        List<dynamic> sections = data[0]['sections'];
+        if (sections.isNotEmpty) {
+          var firstSection = sections[0];
+          if (firstSection['lessons'] != null &&
+              firstSection['lessons'].isNotEmpty) {
+            String videoUrl = firstSection['lessons'][0]['url'];
 
-    // String? videoUrl;
-
-    //   // Verificar si existe la estructura de datos esperada
-    //   if (data[0] is List &&
-    //       data[0]!.isNotEmpty &&
-    //       data[0] is List &&
-    //       data[0]!.isNotEmpty) {
-    //     // Extraer URL del video
-    //     videoUrl = widget.courseData['sections'][0]['lessons'][0]['url'];
-    //     print("video url es igual a: $videoUrl");
-    //   } else {
-    //     debugPrint('Estructura de datos no válida o URL de video no encontrada.');
-    //   }
-
-    //   if (videoUrl != null && videoUrl.isNotEmpty) {
-    //     // Inicializar el controlador de video
-    //     _videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl))
-    //       ..initialize().then((_) {
-    //         setState(() {}); // Actualizar el estado cuando el video esté listo
-    //       });
-
-    //     // Configurar el controlador de Chewie
-    //     _chewieController = ChewieController(
-    //       videoPlayerController: _videoController,
-    //       autoPlay: false,
-    //       looping: false,
-    //       materialProgressColors: ChewieProgressColors(
-    //         playedColor: Colors.blue,
-    //         handleColor: Colors.blueAccent,
-    //         backgroundColor: Colors.grey,
-    //         bufferedColor: Colors.lightBlue,
-    //       ),
-    //       errorBuilder: (context, errorMessage) {
-    //         return Center(
-    //           child: Text(
-    //             errorMessage,
-    //             style: const TextStyle(color: Colors.red),
-    //           ),
-    //         );
-    //       },
-    //     );
-    //   } else {
-    //     debugPrint('URL del video no encontrada.');
-    //   }
+            _videoController =
+                VideoPlayerController.networkUrl(Uri.parse(videoUrl))
+                  ..initialize().then((_) {
+                    setState(() {
+                      _chewieController = ChewieController(
+                        videoPlayerController: _videoController,
+                        autoPlay:
+                            true, // Hacer que se reproduzca automáticamente
+                        looping: false,
+                      );
+                    });
+                  });
+          }
+        }
+      } catch (e) {
+        debugPrint('Error al configurar el video: $e');
+      }
+    }
   }
 
   @override
@@ -105,38 +121,77 @@ class _CourseScreenState extends State<CourseScreen> {
     super.dispose();
   }
 
+  void playVideo(String videoUrl) {
+    // Verifica si ya hay un controlador de video anterior y lo libera.
+    if (_videoController.value.isInitialized) {
+      _videoController.pause();
+      _videoController.dispose();
+    }
+
+    // Crear un nuevo VideoPlayerController y ChewieController
+    _videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl))
+      ..initialize().then((_) {
+        setState(() {
+          _chewieController = ChewieController(
+            videoPlayerController: _videoController,
+            autoPlay: true, // Reproduce automáticamente el video
+            looping: false, // No hace bucles
+          );
+        });
+      });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.courseData['course'] is Map<String, dynamic>
-              ? (widget.courseData['course']['name'] ?? 'Sin nombre')
-              : ((widget.courseData['course'])?.name ?? 'Sin nombre'),
+          assignmentContent != null
+              ? assignmentContent!['name'] ?? 'Curso sin nombre'
+              : 'Curso no disponible',
         ),
       ),
-      body: _chewieController != null
-          ? Column(
-              children: [
-                AspectRatio(
-                  aspectRatio: _videoController.value.isInitialized
-                      ? _videoController.value.aspectRatio
-                      : 16 / 9,
-                  child: Chewie(controller: _chewieController!),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : errorMessage != null
+              ? Center(
+                  child:
+                      Text(errorMessage!, style: TextStyle(color: Colors.red)),
+                )
+              : Column(
+                  children: [
+                    if (_chewieController != null)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 250, // Ajusta la altura según sea necesario
+                        child: Chewie(
+                          controller: _chewieController!,
+                        ),
+                      ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: lessons.length,
+                        itemBuilder: (context, index) {
+                          var lesson = lessons[index];
+                          return ListTile(
+                            leading: lesson['img'] != null
+                                ? Image.network(lesson['img'])
+                                : Icon(Icons.video_collection),
+                            title: Text(lesson['name'] ?? 'Lección sin nombre'),
+                            subtitle: Text(
+                                "Duración: ${lesson['duration'] ?? '0'} segundos"),
+                            onTap: () {
+                              String videoUrl = lesson['url'] ?? '';
+                              if (videoUrl.isNotEmpty) {
+                                playVideo(videoUrl);
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Data del curso: ${widget.courseData['course'] is Map<String, dynamic> ? widget.courseData['course']['name'] : (widget.courseData['course'] as Course?)?.name ?? 'Sin datos'}',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            )
-          : const Center(
-              child: CircularProgressIndicator(),
-            ),
     );
   }
 }

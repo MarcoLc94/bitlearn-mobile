@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/course_model.dart';
 import '../services/courses/courses_service.dart';
 import '../services/auth/auth_service.dart';
+import './course_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -110,7 +111,6 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Vista de Cursos Pendientes
   Widget _buildCoursesView() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,70 +126,96 @@ class HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        // Contenedor para el carrusel
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
-          height: 250, // Ajusta la altura del carrusel según tus necesidades
+        // Contenedor para la lista de cursos
+        Expanded(
           child: isLoading
               ? Center(child: CircularProgressIndicator())
               : errorMessage.isNotEmpty
                   ? Center(child: Text(errorMessage))
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: courses.length,
-                      itemBuilder: (context, index) {
-                        final course = courses[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          child: Container(
-                            width:
-                                150, // Ajusta el ancho de los elementos del carrusel
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                // Imagen de fondo
-                                Container(
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage(course.img ??
-                                          'https://via.placeholder.com/150'), // Asegúrate de usar la URL correcta
-                                      fit: BoxFit.cover,
+                  : courses.isEmpty // Verifica si 'courses' está vacío
+                      ? Center(child: Text('No hay cursos disponibles'))
+                      : ListView.builder(
+                          itemCount: courses.length,
+                          itemBuilder: (context, index) {
+                            final course = courses[index];
+                            return Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Acción cuando el curso es presionado
+                                  String courseId = course.id;
+
+                                  // Crear un mapa con el ID del curso y el curso completo
+                                  Map<String, dynamic> arguments = {
+                                    'courseId': courseId,
+                                    'course':
+                                        course, // Se pasa solo el curso, no toda la lista
+                                  };
+
+                                  // Navegar al CourseScreen sin perder la estructura del Layout
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => CourseScreen(
+                                        courseData:
+                                            arguments, // Enviar todo el mapa como argumento
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Card(
+                                  margin: EdgeInsets.symmetric(vertical: 10),
+                                  child: Container(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.8, // Establece el 80% del ancho de la pantalla
+                                    height:
+                                        200, // Ajusta la altura de cada elemento
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        // Imagen de fondo
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: NetworkImage(course.img ??
+                                                  'https://via.placeholder.com/150'),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        // Fondo con opacidad para mejorar la legibilidad
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: Color(0x1A000000),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        // Texto sobre la imagen
+                                        Positioned(
+                                          bottom: 10,
+                                          left: 10,
+                                          right: 10,
+                                          child: Text(
+                                            course.name,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                                // Fondo con opacidad para mejorar la legibilidad
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Color(0x1A000000),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                // Texto sobre la imagen
-                                Positioned(
-                                  bottom: 10,
-                                  left: 10,
-                                  right: 10,
-                                  child: Text(
-                                    course
-                                        .name, // Cambia esto por el nombre del curso
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                              ),
+                            );
+                          },
+                        ),
         ),
       ],
     );
@@ -203,7 +229,7 @@ class HomeScreenState extends State<HomeScreen> {
         children: [
           // Imagen demo de la insignia
           Image.network(
-            'https://via.placeholder.com/150', // Aquí puedes poner la URL de la imagen de la insignia
+            'https://cdn-icons-png.freepik.com/512/13434/13434972.png', // Aquí puedes poner la URL de la imagen de la insignia
             width: 100, // Ajusta el tamaño de la imagen
             height: 100, // Ajusta el tamaño de la imagen
           ),

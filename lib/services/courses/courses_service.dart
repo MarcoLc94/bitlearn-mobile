@@ -56,7 +56,6 @@ class CourseService {
           'Authorization': 'Bearer $token', // Enviar el token en el header
         },
       );
-      print(response.body);
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
         return data.map((courseData) => Course.fromJson(courseData)).toList();
@@ -68,8 +67,8 @@ class CourseService {
     }
   }
 
-  // Método para obtener 1 solo curso por id
-  Future<List<dynamic>> fetchMyCourseById(id) async {
+  //Metodo para obtener todo el assigment
+  Future<List<dynamic>> fetchMyAssigment() async {
     try {
       String? token = await authService.getToken(); // Obtener el token
       if (token == null) {
@@ -78,7 +77,7 @@ class CourseService {
 
       // Configuramos los headers, incluyendo el token
       final response = await http.get(
-        Uri.parse('$apiUrl/myAssignments/$id'),
+        Uri.parse('$apiUrl/myAssignments'),
         headers: {
           'Authorization': 'Bearer $token', // Enviar el token en el header
         },
@@ -90,6 +89,40 @@ class CourseService {
         throw Exception('Failed to load courses: ${response.statusCode}');
       }
     } catch (e) {
+      throw Exception('Error fetching courses: $e');
+    }
+  }
+
+  // Método para obtener 1 solo curso por id
+  Future<List<dynamic>> fetchMyCourseById(id) async {
+    try {
+      print(id);
+      String? token = await authService.getToken(); // Obtener el token
+      if (token == null) {
+        throw Exception('No auth token found. Please log in.');
+      }
+
+      // Configuramos los headers, incluyendo el token
+      final response = await http.get(
+        Uri.parse('$apiUrl/myAssignment/$id'),
+        headers: {
+          'Authorization': 'Bearer $token', // Enviar el token en el header
+        },
+      );
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        List<dynamic> list = [
+          data
+        ]; // Convertir el Map en una lista con un solo elemento
+        print("La info como lista es $list");
+        return list;
+      } else {
+        print("bug 1");
+        throw Exception('Failed to load courses: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("$e");
       throw Exception('Error fetching courses: $e');
     }
   }

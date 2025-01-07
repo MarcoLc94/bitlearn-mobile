@@ -33,14 +33,18 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         Padding(
           padding: EdgeInsets.only(right: 10.0),
-          child: IconButton(
-            icon: Icon(
-              Icons.account_circle,
-              size: 40,
+          child: InkWell(
+            onTap: () => _showUserInfoModal(context),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/user-1.jpg',
+                width: 40, // Ajusta el tamaño al deseado
+                height: 40,
+                fit: BoxFit.cover, // Asegura que la imagen se ajuste al círculo
+              ),
             ),
-            onPressed: () => (_showUserInfoModal(context)),
           ),
-        )
+        ),
       ],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(20.0)),
