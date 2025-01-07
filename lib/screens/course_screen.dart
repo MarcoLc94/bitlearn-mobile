@@ -30,7 +30,7 @@ class _CourseScreenState extends State<CourseScreen> {
   // Método para obtener los cursos
   Future<void> fetchCourseById(String courseId) async {
     try {
-      List<Course> dataInfo = await coursesService.fetchMyCourseById(courseId);
+      List<dynamic> dataInfo = await coursesService.fetchMyCourseById(courseId);
       setState(() {
         data = dataInfo;
         print(data);
@@ -47,8 +47,8 @@ class _CourseScreenState extends State<CourseScreen> {
   @override
   void initState() {
     super.initState();
-    fetchCourseById(widget.courseData['mainCourseId']);
-    print(widget.courseData['mainCourseId']);
+    fetchCourseById(widget.courseData['courseId']);
+    print("Variable es: ${widget.courseData['course']}");
 
     print(data);
 

@@ -56,6 +56,7 @@ class CourseService {
           'Authorization': 'Bearer $token', // Enviar el token en el header
         },
       );
+      print(response.body);
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
         return data.map((courseData) => Course.fromJson(courseData)).toList();
@@ -68,7 +69,7 @@ class CourseService {
   }
 
   // Método para obtener 1 solo curso por id
-  Future<List<Course>> fetchMyCourseById(id) async {
+  Future<List<dynamic>> fetchMyCourseById(id) async {
     try {
       String? token = await authService.getToken(); // Obtener el token
       if (token == null) {
@@ -84,7 +85,7 @@ class CourseService {
       );
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
-        return data.map((courseData) => Course.fromJson(courseData)).toList();
+        return data;
       } else {
         throw Exception('Failed to load courses: ${response.statusCode}');
       }

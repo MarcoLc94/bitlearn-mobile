@@ -194,16 +194,14 @@ class MyCoursesScreenState extends State<MyCoursesScreen> {
                                                   ElevatedButton(
                                                     onPressed: () {
                                                       // Acción cuando el botón "Play" es presionado
-                                                      String mainCourseId = course
-                                                          ._id; // Aquí accedemos al _id de la clase Course
+                                                      String courseId = course
+                                                          .id; // Asegúrate de tener el 'course' disponible en este contexto
 
-                                                      // Crear un mapa con el ID del curso principal
+                                                      // Crear un mapa con el ID del curso y el curso completo
                                                       Map<String, dynamic>
                                                           arguments = {
-                                                        'mainCourseId':
-                                                            mainCourseId, // Pasamos el _id principal
-                                                        'course':
-                                                            course, // También puedes pasar todo el objeto 'course' si lo necesitas
+                                                        'courseId': courseId,
+                                                        'course': courses,
                                                       };
 
                                                       // Navegar al CourseScreen sin perder la estructura del Layout
