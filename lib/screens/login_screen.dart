@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:local_auth/local_auth.dart'; // Importa local_auth
 import '../services/auth/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,6 +18,7 @@ class LoginScreenState extends State<LoginScreen>
   final TextEditingController _passwordController = TextEditingController();
   bool _hidePassword = true;
   bool _isLoading = false;
+  bool _useBiometrics = false; // Variable para controlar si usar biometría
 
   final FocusNode _userFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
@@ -27,6 +29,9 @@ class LoginScreenState extends State<LoginScreen>
   // Para saber si el campo ha sido tocado
   bool _userTouched = false;
   bool _passwordTouched = false;
+
+  final LocalAuthentication _auth =
+      LocalAuthentication(); // Instancia de LocalAuthentication
 
   // Método para guardar el token
   Future<void> saveToken(String token) async {
@@ -49,6 +54,23 @@ class LoginScreenState extends State<LoginScreen>
     );
 
     _animationController.forward();
+
+    _checkBiometricAvailability(); // Verifica si biometría está disponible
+  }
+
+  // Verifica si la biometría está disponible en el dispositivo
+  Future<void> _checkBiometricAvailability() async {
+    bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
+    if (canAuthenticateWithBiometrics) {
+      // Verifica si tiene biometría configurada
+      List<BiometricType> availableBiometrics =
+          await _auth.getAvailableBiometrics();
+      if (availableBiometrics.isNotEmpty) {
+        setState(() {
+          _useBiometrics = true; // Habilita la opción de usar biometría
+        });
+      }
+    }
   }
 
   @override
@@ -75,7 +97,7 @@ class LoginScreenState extends State<LoginScreen>
 
   Future<bool> _checkConnectivity() async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    if (connectivityResult[0] == ConnectivityResult.none) {
       Fluttertoast.showToast(
         msg: "No hay conexión a Internet",
         toastLength: Toast.LENGTH_SHORT,
@@ -88,6 +110,42 @@ class LoginScreenState extends State<LoginScreen>
       return false;
     }
     return true;
+  }
+
+  // Método para iniciar sesión con biometría
+  Future<void> _authenticateWithBiometrics() async {
+    try {
+      bool didAuthenticate = await _auth.authenticate(
+        localizedReason: 'Por favor autentíquese para continuar',
+        options: const AuthenticationOptions(biometricOnly: true),
+      );
+      if (didAuthenticate) {
+        // Si la autenticación fue exitosa
+        Fluttertoast.showToast(
+          msg: "Autenticación exitosa",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Color(0xFF79a341),
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+        // Aquí iría tu lógica de inicio de sesión
+        if (mounted) {
+          Navigator.pushNamed(context, '/home');
+        }
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error de autenticación biométrica",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
   }
 
   void submit() async {
@@ -107,7 +165,6 @@ class LoginScreenState extends State<LoginScreen>
 
     // Si el token es null, significa que el login falló
     if (token.isNotEmpty && token != "Error") {
-      // Mostramos un mensaje de éxito y navegamos a la siguiente pantalla
       Fluttertoast.showToast(
         msg: "Inicio de sesión correcto!",
         toastLength: Toast.LENGTH_SHORT,
@@ -126,7 +183,6 @@ class LoginScreenState extends State<LoginScreen>
         Navigator.pushNamed(context, '/home');
       }
     } else {
-      // Si el login falló, mostramos un mensaje de error
       Fluttertoast.showToast(
         msg: "Credenciales incorrectas",
         toastLength: Toast.LENGTH_SHORT,
@@ -200,6 +256,11 @@ class LoginScreenState extends State<LoginScreen>
                       _userTouched = true;
                     }),
                     decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        Icons.person,
+                        size: 24,
+                        color: Color(0xFF79a341),
+                      ),
                       labelStyle: TextStyle(color: Colors.black),
                       labelText: 'Usuario',
                       border: OutlineInputBorder(),
@@ -222,73 +283,66 @@ class LoginScreenState extends State<LoginScreen>
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _hidePassword,
-                    focusNode: _passwordFocusNode,
                     onChanged: (_) => setState(() {
                       _passwordTouched = true;
                     }),
                     decoration: InputDecoration(
-                      labelStyle: TextStyle(color: Colors.black),
                       labelText: 'Contraseña',
-                      border: const OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(
+                        Icons.lock, // Candado al inicio
+                        size: 24,
+                        color: Color(0xFF79a341),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _hidePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility, // Ojo
                           color: Color(0xFF79a341),
-                          width: 2.0,
                         ),
+                        onPressed: () {
+                          // Cambia el estado para mostrar/ocultar la contraseña
+                          setState(() {
+                            _hidePassword = !_hidePassword;
+                          });
+                        },
                       ),
                       errorText: _passwordTouched &&
                               (_passwordController.text.isEmpty ||
                                   _passwordController.text.length <= 3)
                           ? 'Debe tener más de 3 caracteres'
                           : null,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _hidePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: togglePasswordVisibility,
-                      ),
                     ),
-                    style: TextStyle(color: Colors.black),
-                    cursorColor: Color(0xFF79a341),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _isFormValid() ? submit : null,
+                    style: ButtonStyle(
+                      shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero)),
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : const Text("Iniciar sesión"),
                   ),
                   const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Olvidaste la contraseña?",
-                      textAlign: TextAlign.left,
-                      style: const TextStyle(
-                        color: Color(0xFF79a341),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 60),
-                  _isLoading
-                      ? CircularProgressIndicator(
-                          color: Color(0xFF79a341),
-                        )
-                      : ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _isFormValid()
-                                ? Color(0xFF79a341)
-                                : Colors.grey,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero,
-                            ),
-                          ),
-                          onPressed: _isFormValid() ? submit : null,
-                          child: const Text('Iniciar sesión'),
-                        ),
                 ],
               ),
             ),
           ],
         ),
       ),
+      floatingActionButton: _useBiometrics
+          ? FloatingActionButton(
+              onPressed: _authenticateWithBiometrics,
+              backgroundColor: Color(0xFF79a341),
+              child: const Icon(Icons.fingerprint),
+            )
+          : null,
     );
   }
 }
